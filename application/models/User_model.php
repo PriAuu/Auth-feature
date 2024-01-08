@@ -52,10 +52,4 @@ class User_model extends CI_Model
         $this->db->query($q);
         return $this->db->insert_id();
     }
-
-    public function isDuplicate($email)
-    {
-        $this->db->get_where('users', array('email' => $email), 1);
-        return $this->db->affected_rows() > 0 ? TRUE : FALSE;
-    }
 }
