@@ -179,4 +179,10 @@ class Auth extends CI_Controller
 	{
 		$this->load->view('auth/register_completed');
 	}
+	
+	public function logout()
+	{
+	    $this->session->sess_destroy();
+	    redirect(site_url() . 'auth/login');
+	}
 }
