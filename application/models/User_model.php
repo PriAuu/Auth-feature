@@ -52,4 +52,24 @@ class User_model extends CI_Model
         $this->db->query($q);
         return $this->db->insert_id();
     }
+    
+    public function get_news_by_id($id = 0)
+    {
+        if ($id === 0)
+        {
+            $query = $this->db->get('users');
+            return $query->result_array();
+        }
+        
+        $query = $this->db->get_where('users', array('id' => $id));
+        return $query->row_array();
+    }
+    
+    public function updateprofile($post)
+    {
+        $this->db->where('id', $post['user_id']);
+        $this->db->update('users', array('firstname' => $post['firstname'] , 'lastname' => $post['lastname']));
+        $success = $this->db->affected_rows();
+        return true;
+    }
 }

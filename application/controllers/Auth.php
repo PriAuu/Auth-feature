@@ -11,6 +11,7 @@ class Auth extends CI_Controller
     $this->load->library('password');
     $this->load->library('recaptcha');
     $this->load->library('tank_auth');
+    $this->load->helper('url_helper');
     $this->status = $this->config->item('status');
     $this->banned_users = $this->config->item('banned_users');
   }
@@ -184,5 +185,48 @@ class Auth extends CI_Controller
 	{
 	    $this->session->sess_destroy();
 	    redirect(site_url() . 'auth/login');
+	}
+	
+	public function edit_profile()
+	{
+	    if (empty($this->session->userdata['email'])) {
+	        redirect(site_url() . 'auth/login');
+	    } else {
+	        
+	        // $id = $this->uri->segment(3);
+	        $data = $this->session->userdata;
+	        $dataInfo = array(
+	            'id' => $data['id']
+	        );
+	        
+	        $data['news_item'] = $this->user_model->get_news_by_id($dataInfo['id']);
+	        
+	        $this->form_validation->set_rules('firstname', 'First Name', 'required|min_length[2]');
+	        $this->form_validation->set_rules('lastname', 'Last Name', 'required|min_length[2]');
+	        
+	        // $data['groups'] = $this->editprofile_model->getUserInfo($dataInfo['id']);
+	        
+	        if ($this->form_validation->run() == FALSE) {
+	            
+	            $this->load->view('navbar');
+	            $this->load->view('auth/edit_profile', $data);
+	        } else {
+	            
+	            $post = $this->input->post(NULL, TRUE);
+	            $cleanPost = $this->security->xss_clean($post);
+	            
+	            $cleanPost['user_id'] = $dataInfo['id'];
+	            $cleanPost['firstname'] = $this->input->post('firstname');
+	            $cleanPost['lastname'] = $this->input->post('lastname');
+	            
+	            $this->user_model->updateprofile($cleanPost);
+	            redirect('auth/editpro_success');
+	        }
+	    }
+	}
+	
+	public function editpro_success()
+	{
+	    $this->load->view('auth/edit_profilesuccess');
 	}
 }
