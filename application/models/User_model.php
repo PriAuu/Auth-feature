@@ -23,7 +23,7 @@ class User_model extends CI_Model
     unset($userInfo->password);
     return $userInfo;
   }
-  
+
   public function getAllSettings()
   {
     $this->db->select('*');
@@ -36,22 +36,49 @@ class User_model extends CI_Model
     $this->db->get_where('users', array('email' => $email), 1);
     return $this->db->affected_rows() > 0 ? TRUE : FALSE;
   }
-  
-   public function addUser($d)
-   {
-        $string = array(
-            'firstname' => $d['firstname'],
-            'lastname' => $d['lastname'],
-            'email' => $d['email'],
-            'password' => $d['password'],
-            'role' => $d['role'],
-            'status' => $d['status'],
-            'banned_users' => $d['banned_users']
-        );
-        $q = $this->db->insert_string('users', $string);
-        $this->db->query($q);
-        return $this->db->insert_id();
+
+  public function addUser($d)
+  {
+    $string = array(
+      'firstname' => $d['firstname'],
+      'lastname' => $d['lastname'],
+      'email' => $d['email'],
+      'password' => $d['password'],
+      'role' => $d['role'],
+      'status' => $d['status'],
+      'banned_users' => $d['banned_users']
+    );
+    $q = $this->db->insert_string('users', $string);
+    $this->db->query($q);
+    return $this->db->insert_id();
+  }
+
+  public function updatepassword($post)
+  {
+    if (!$this->db->where('id', $post['user_id'])) {
+      redirect('edit_password');
+    } else {
+      if (!$this->db->where('password', $post['oldpassword'])) {
+        redirect('edit_password');
+      } else {
+        $this->db->update('users', array('password' => $post['newpassword']));
+        $success = $this->db->affected_rows();
+      }
     }
+    return true;
+  }
+
+  public function getUserInfo($id)
+  {
+    $q = $this->db->get_where('users', array('id' => $id), 1);
+    if ($this->db->affected_rows() > 0) {
+      $row = $q->row();
+      return $row;
+    } else {
+      error_log('no user found getUserInfo(' . $id . ')');
+      return false;
+    }
+  }
     
     public function get_news_by_id($id = 0)
     {

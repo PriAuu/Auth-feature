@@ -187,6 +187,62 @@ class Auth extends CI_Controller
 	    redirect(site_url() . 'auth/login');
 	}
 	
+	public function edit_password()
+  {
+      if (empty($this->session->userdata['email'])) {
+          redirect(site_url() . 'auth/login');
+      } else {
+
+          $data = $this->session->userdata;
+          $this->load->model('user_model');
+
+          $dataInfo = array(
+             'id' => $data['id']
+          );
+
+            $this->form_validation->set_rules('oldpassword', 'Current Password', 'required|min_length[5]');
+            $this->form_validation->set_rules('newpassword', 'New Password', 'required|min_length[5]');
+            $this->form_validation->set_rules('confnewpassword', 'Confirm Password Confirmation', 'required|matches[newpassword]');
+
+            $data['groups'] = $this->user_model->getUserInfo($dataInfo['id']);
+
+            if ($this->form_validation->run() == FALSE) {
+
+                $this->load->view('navbar');
+                $this->load->view('auth/edit_password', $data);
+            } else {
+
+                $this->load->library('password');
+                $post = $this->input->post(NULL, TRUE);
+                $cleanPost = $this->security->xss_clean($post);
+                $hashed = $this->password->create_hash($cleanPost['newpassword']);
+                $checkpassword = $this->password->create_hash($cleanPost['oldpassword']);
+
+                $cleanPost['user_id'] = $dataInfo['id'];
+                $cleanPost['oldpassword'] = $checkpassword;
+                $cleanPost['newpassword'] = $hashed;
+
+              if ($checkpassword == $hashed) {
+
+                  redirect('auth/edit_unsuccess');
+              } else {
+                  $this->user_model->updatepassword($cleanPost);
+                  redirect('auth/edit_success');
+              }
+          }
+      }
+  }
+
+  public function edit_success()
+  {
+      $this->load->view('auth/edit_passwordsuccess');
+  }
+
+  public function edit_unsuccess()
+  {
+      $this->load->view('auth/edit_passwordunsuccess');
+  }
+  
 	public function edit_profile()
 	{
 	    if (empty($this->session->userdata['email'])) {
